@@ -1,0 +1,3 @@
+class CFG:
+    GAN_FILTERS = 32
+    DIS_FILTERS = 64

@@ -1,0 +1,10 @@
+pydicom
+wandb
+torchsummary
+torchvision
+torchmetrics 
+lightning==2.2.3
+pillow
+matplotlib
+pandas
+numpy
