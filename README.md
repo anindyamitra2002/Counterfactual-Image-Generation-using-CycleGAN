@@ -8,7 +8,16 @@ The proposed approach holds promise for enhancing the interpretability of deep l
 
 
 ### Python 3.11.0 recommended
+### Create a virtual envireonment
 ```
 python -m venv myenv
+```
+### Activate the virtul environment
+```
 .\myenv\Scripts\activate
+```
+Train the CycleGAN
+```
+
+python pipeline.py --model_type "cycle-gan" --image_size 512 --batch_size 4 --epochs 10 --train_dir "D:\Official\Reseach Projects\Personal Projects\Machine Learning\Deep Learning\Counterfactual-Image-Generation-using-CycleGAN\data\rsna-pneumonia-dataset\train" --val_dir "D:\Official\Reseach Projects\Personal Projects\Machine Learning\Deep Learning\Counterfactual-Image-Generation-using-CycleGAN\data\rsna-pneumonia-dataset\val" --test_dir "D:\Official\Reseach Projects\Personal Projects\Machine Learning\Deep Learning\Counterfactual-Image-Generation-using-CycleGAN\data\rsna-pneumonia-dataset\test" --project "CycleGAN-CounterFactual Explanation" --job_name "Generator-and-Discriminator-training" --checkpoint_dir "D:\Official\Reseach Projects\Personal Projects\Machine Learning\Deep Learning\Counterfactual-Image-Generation-using-CycleGAN\models/gan" --classifier_path "D:\Official\Reseach Projects\Personal Projects\Machine Learning\Deep Learning\Counterfactual-Image-Generation-using-CycleGAN\models\swin_t-epoch15-val_loss0.50.ckpt"
 ```

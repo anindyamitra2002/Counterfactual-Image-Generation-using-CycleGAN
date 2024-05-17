@@ -10,21 +10,20 @@ class Classifier(pl.LightningModule):
     def __init__(self, transfer=True):
         super(Classifier, self).__init__()
         self.conv = nn.Conv2d(1, 3, kernel_size=3, stride=1, padding=1)  # Adjust input channels to 3
-        self.model = models.swin_t(weights='IMAGENET1K_V1')
+        self.model = models.efficientnet_b1(weights='IMAGENET1K_V1')
         if transfer:
             # layers are frozen by using eval()
             self.model.eval()
             # freeze params
             for p in self.model.parameters() : 
                 p.requires_grad = False
-        num_ftrs = 768
-        self.model.head = nn.Sequential(
-            nn.Linear(in_features=num_ftrs, out_features=256),
+        num_ftrs = 1280
+        self.model.classifier = nn.Sequential(
             nn.LeakyReLU(),
-            nn.Dropout(p=0.5), 
-            nn.Linear(in_features=256 , out_features=2),
+            nn.Dropout(p=0.3), 
+            nn.Linear(in_features=num_ftrs , out_features=2),
             nn.Softmax(dim=1)  
-        ) 
+        )
 
         self.criterion = nn.CrossEntropyLoss()
         self.train_accuracy = Accuracy(task='binary')
@@ -38,11 +37,11 @@ class Classifier(pl.LightningModule):
         images, labels = batch
         outputs = self(images)
         loss = self.criterion(outputs, labels)
-        self.log('train_loss', loss)
+        self.log('train_loss', loss, prog_bar=True, on_epoch=True, on_step=True)
         # Calculate and log accuracy
         _, preds = torch.max(outputs, 1)
         acc = self.train_accuracy(preds, labels)
-        self.log('train_acc', acc, prog_bar=True)
+        self.log('train_acc', acc, prog_bar=True, on_step=True, on_epoch=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -73,4 +72,3 @@ class Classifier(pl.LightningModule):
             },
             'monitor': 'val_loss'
         }
-

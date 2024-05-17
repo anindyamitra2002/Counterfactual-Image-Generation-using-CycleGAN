@@ -95,8 +95,8 @@ def train_cyclegan(image_size,
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
     wandb_logger = WandbLogger(project=project, name=job_name, log_model="all")
-
-    cyclegan = CycleGAN(train_dir=train_dir, val_dir=val_dir, test_dataloader=test_dataloader, gf=CFG['GAN_FILTERs'], df=CFG['DIS_FILTERS'], classifier_path=classifier_path) # classifier_path
+    print(classifier_path)
+    cyclegan = CycleGAN(train_dir=train_dir, val_dir=val_dir, test_dataloader=test_dataloader, classifier_path=classifier_path, gf=CFG.GAN_FILTERS, df=CFG.DIS_FILTERS)
 
     gan_checkpoint_callback = ModelCheckpoint(dirpath=checkpoint_dir,
                                         filename='cyclegan-epoch_{epoch}-vloss_{val_generator_loss:.2f}',

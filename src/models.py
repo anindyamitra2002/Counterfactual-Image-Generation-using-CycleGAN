@@ -12,113 +12,94 @@ from classifier import Classifier
 from dataset import CustomDataset
 
 
-class ResidualBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, dropout_rate=0.0):
-        super(ResidualBlock, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(out_channels)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(out_channels)
-        self.dropout = nn.Dropout(dropout_rate)
+class AttentionGate(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(AttentionGate, self).__init__()
+        self.conv_gate = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0)
+        self.conv_x = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0)
+        self.softmax = nn.Softmax(dim=1)
 
-    def forward(self, x):
-        residual = x
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-        out = self.dropout(out)
-        out = self.conv2(out)
-        out = self.bn2(out)
-        out += residual
-        out = self.relu(out)
-        return out
-
-class ResUNetGenerator(pl.LightningModule):
-    def __init__(self, gf, channels, dropout_rate=0.3):
+    def forward(self, x, g):
+        gate = self.conv_gate(g)
+        x = self.conv_x(x)
+        attention = self.softmax(gate)
+        x_att = x * attention
+        return x_att
+    
+class ResUNetGenerator(nn.Module):
+    def __init__(self, gf, channels):
         super(ResUNetGenerator, self).__init__()
-        self.gf = gf
+        # self.img_shape = img_shape
         self.channels = channels
-        self.dropout_rate = dropout_rate
+        
+        # Downsampling layers
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(channels, gf, kernel_size=4, stride=2, padding=1),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.GroupNorm(num_groups=1, num_channels=gf)
+        )
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(gf, gf * 2, kernel_size=4, stride=2, padding=1),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.GroupNorm(num_groups=1, num_channels=gf * 2)
+        )
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(gf * 2, gf * 4, kernel_size=4, stride=2, padding=1),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.GroupNorm(num_groups=1, num_channels=gf * 4)
+        )
+        self.conv4 = nn.Sequential(
+            nn.Conv2d(gf * 4, gf * 8, kernel_size=4, stride=2, padding=1),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.GroupNorm(num_groups=1, num_channels=gf * 8)
+        )
 
-        # Define the layers for the encoder
-        self.conv2d = nn.Conv2d(channels, gf, kernel_size=4, stride=2, padding=1, padding_mode='reflect')
-        
-        self.conv2d_layers_left = nn.ModuleList([
-            nn.Conv2d(gf * 2**i, gf * 2**(i+1), kernel_size=4, stride=2, padding=1, padding_mode='reflect')
-            for i in range(4)
-        ])
-        
-        self.conv2d_layers_right = nn.ModuleList([
-            nn.Conv2d(gf * 2**(i+1), gf * 2**i, kernel_size=3, stride=1, padding=1, padding_mode='reflect')
-            for i in range(4)
-        ])
-        
-        self.groupNorm_layers = nn.ModuleList([
-            nn.GroupNorm(8, gf * 2**(i+1))
-            for i in range(4)
-        ])
-        
-        self.res_blocks_left = nn.ModuleList([
-            ResidualBlock(gf * 2**(i+1), gf * 2**(i+1), dropout_rate)
-            for i in range(4)
-        ])
-        
-        self.res_blocks_right = nn.ModuleList([
-            ResidualBlock(gf * 2**i, gf * 2**i, dropout_rate)
-            for i in range(4)
+        self.attn_layer = nn.ModuleList([
+            AttentionGate(gf * 2**(i), gf * 2**(i+1))
+            for i in range(3)
         ])
 
-        # Define the layers for the decoder
-        self.deconv2d_layers = nn.ModuleList([
-            nn.ConvTranspose2d(gf * 2**(4-i), gf * 2**(3-i), kernel_size=4, stride=2, padding=1)
-            for i in range(4)
-        ])
-        self.deconv2d_final = nn.ConvTranspose2d(gf, channels, kernel_size=4, stride=2, padding=1)
-        self.leaky_relu = nn.LeakyReLU(0.2)
-        self.group_norm = nn.GroupNorm(8, gf)
-        self.sig = nn.Sigmoid()
-
+        # Upsampling layers
+        self.deconv1 = nn.Sequential(
+            nn.ConvTranspose2d(gf * 8, gf * 4, kernel_size=4, stride=2, padding=1),
+            nn.ReLU(inplace=True),
+            nn.GroupNorm(num_groups=1, num_channels=gf * 4)
+        )
+        self.deconv2 = nn.Sequential(
+            nn.ConvTranspose2d(gf * 8, gf * 2, kernel_size=4, stride=2, padding=1),
+            nn.ReLU(inplace=True),
+            nn.GroupNorm(num_groups=1, num_channels=gf * 2)
+        )
+        self.deconv3 = nn.Sequential(
+            nn.ConvTranspose2d(gf * 4, gf, kernel_size=4, stride=2, padding=1),
+            nn.ReLU(inplace=True),
+            nn.GroupNorm(num_groups=1, num_channels=gf)
+        )
+        self.deconv4 = nn.Sequential(
+            nn.ConvTranspose2d(gf * 2, channels, kernel_size=4, stride=2, padding=1),
+            nn.Tanh()
+        )
+        
     def forward(self, x):
+        # Downsampling
+        d1 = self.conv1(x)
+        d2 = self.conv2(d1)
+        d3 = self.conv3(d2)
+        d4 = self.conv4(d3)
         
-        d0 = self.leaky_relu(self.group_norm(self.conv2d(x)))
-        d1 = self.leaky_relu(self.groupNorm_layers[0](self.conv2d_layers_left[0](d0)))
-        d1 = self.res_blocks_left[0](d1)
+        # Upsampling
+        u1 = self.deconv1(d4)
+        u1 = self.attn_layer[2](d3, u1)
         
-        d2 = self.leaky_relu(self.groupNorm_layers[1](self.conv2d_layers_left[1](d1)))
-        d2 = self.res_blocks_left[1](d2)
+        u2 = self.deconv2(u1)
+        u2 = self.attn_layer[1](d2, u2)
         
-        d3 = self.leaky_relu(self.groupNorm_layers[2](self.conv2d_layers_left[2](d2)))
-        d3 = self.res_blocks_left[2](d3)
+        u3 = self.deconv3(u2)
+        u3 = self.attn_layer[0](d1, u3)
         
-        d4 = self.leaky_relu(self.groupNorm_layers[3](self.conv2d_layers_left[3](d3)))
-        d4 = self.res_blocks_left[3](d4)
-
-
-        # Decoder
-        u1 = self.deconv2d_layers[0](d4)
-        u1 = torch.cat((u1, d3), dim=1)
-        u1 = self.leaky_relu(self.groupNorm_layers[2](self.conv2d_layers_right[3](u1)))
-        u1 = self.res_blocks_right[3](u1)
+        output = self.deconv4(u3)
         
-        u2 = self.deconv2d_layers[1](u1)
-        u2 = torch.cat((u2, d2), dim=1)
-        u2 = self.leaky_relu(self.groupNorm_layers[1](self.conv2d_layers_right[2](u2)))
-        u2 = self.res_blocks_right[2](u2)
-
-        u3 = self.deconv2d_layers[2](u2)
-        u3 = torch.cat((u3, d1), dim=1)
-        u3 = self.leaky_relu(self.groupNorm_layers[0](self.conv2d_layers_right[1](u3)))
-        u3 = self.res_blocks_right[1](u3)
-        
-        u4 = self.deconv2d_layers[3](u3)
-        u4 = torch.cat((u4, d0), dim=1)
-        u4 = self.leaky_relu(self.group_norm(self.conv2d_layers_right[0](u4)))
-        u4 = self.res_blocks_right[0](u4)
-
-        output_img = self.sig(self.deconv2d_final(u4))
-
-        return output_img
+        return output
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=0.0002, betas=(0.5, 0.999))
@@ -151,7 +132,7 @@ class Discriminator(pl.LightningModule):
 
 
 class CycleGAN(pl.LightningModule):
-    def __init__(self, train_dir, val_dir, test_dataloader, image_size=512, batch_size=4, channels=1, gf=32, df=64, lambda_cycle=10.0, lambda_id=0.1, classifier_path=None, classifier_weight=1):
+    def __init__(self, train_dir, val_dir, test_dataloader, classifier_path, image_size=512, batch_size=4, channels=1, gf=32, df=64, lambda_cycle=10.0, lambda_id=0.1, classifier_weight=1):
         super(CycleGAN, self).__init__()
         self.image_size = image_size
         self.batch_size = batch_size
@@ -162,6 +143,8 @@ class CycleGAN(pl.LightningModule):
         self.lambda_id = lambda_id * lambda_cycle
         self.classifier_path = classifier_path
         self.classifier_weight = classifier_weight
+        self.lowest_val_loss = float('inf')
+        self.validation_step_outputs = []
         self.train_dir = train_dir
         self.val_dir = val_dir
         self.test_dataloader = test_dataloader
@@ -307,6 +290,7 @@ class CycleGAN(pl.LightningModule):
 
         # Total generator loss
         total_loss = adversarial_loss + self.lambda_cycle * cycle_loss + self.lambda_id * identity_loss + self.classifier_weight * class_loss
+        self.validation_step_outputs.append(total_loss)
 
         self.log('val_adversarial_loss', adversarial_loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         self.log('val_cycle_loss', cycle_loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
@@ -315,6 +299,19 @@ class CycleGAN(pl.LightningModule):
         self.log('val_generator_loss', total_loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
         return total_loss
+
+    def on_validation_epoch_end(self):
+        # Calculate average validation loss
+        avg_val_loss = torch.stack(self.validation_step_outputs).mean()
+
+        # Check if current validation loss is lower than the lowest recorded validation loss
+        if avg_val_loss < self.lowest_val_loss:
+            # Update lowest validation loss and corresponding epoch
+            self.lowest_val_loss = avg_val_loss
+
+            # Save the generators' state dictionaries
+            torch.save(self.g_NP.state_dict(), f"/teamspace/studios/this_studio/Counterfactual-Image-Generation-using-CycleGAN/models/gan/g_NP_best.ckpt")
+            torch.save(self.g_PN.state_dict(), f"/teamspace/studios/this_studio/Counterfactual-Image-Generation-using-CycleGAN/models/gan/g_PN_best.ckpt")
 
     def configure_optimizers(self):
         optG = torch.optim.Adam(itertools.chain(self.g_NP.parameters(), self.g_PN.parameters()),lr=2e-4, betas=(0.5, 0.999))
