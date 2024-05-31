@@ -1,7 +1,6 @@
 import torch
 from torchvision import transforms
 from PIL import Image
-import os
 import numpy as np
 from src.classifier import Classifier
 

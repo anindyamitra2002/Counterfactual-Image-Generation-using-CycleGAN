@@ -50,52 +50,59 @@ Where:
 - $` F `$ is the generator from $` Y `$ to $` X `$.
 - $` D_Y `$ and $` D_X `$ are the discriminators for domains $` Y `$ and $` X `$ respectively.
 
-### Cycle-Consistency Loss
+### Loss Functions for CycleGAN
 
-To ensure that the translation preserves key features, a cycle-consistency loss is introduced:
+#### Adversarial Loss (GAN Loss)
+The adversarial loss, also known as the GAN loss, is used to train the generators and discriminators in CycleGAN. It encourages the generators to produce images that are indistinguishable from the target domain images, while the discriminators aim to distinguish between real and generated images.
 
-$` L_{\text{cycle}}(G, F) = \mathbb{E}_{x \sim p_{\text{data}}(x)} [\| F(G(x)) - x \|_1] + \mathbb{E}_{y \sim p_{\text{data}}(y)} [\| G(F(y)) - y \|_1] `$
+**Objective:**
+$`  L_{\text{GAN}}(G, D, X, Y) = E_{y \sim p_{\text{data}}(y)}[\log D(y)] + E_{x \sim p_{\text{data}}(x)}[\log(1 - D(G(x)))] `$
 
-Where $` \| \cdot \|_1 `$ denotes the L1 norm.
+- $` G`$: Generator of the CycleGAN.
+- $` D`$: Discriminator of the CycleGAN.
+- $` X`$: Domain X (source domain).
+- $` Y`$: Domain Y (target domain).
+- $` p_{\text{data}}(x)`$: Probability distribution of real images from domain X.
+- $` p_{\text{data}}(y)`$: Probability distribution of real images from domain Y.
 
-### Full Objective Function
+#### Cycle-Consistency Loss
+The cycle-consistency loss ensures that the reconstructed images maintain the essential characteristics of the original images after being translated back and forth between the two domains.
 
-Combining the adversarial losses and cycle-consistency loss, the full objective for CycleGAN is:
+**Objective:**
+$`  L_{\text{cycle}}(G, F) = E_{x \sim p_{\text{data}}(x)}[||F(G(x)) - x||_1] + E_{y \sim p_{\text{data}}(y)}[||G(F(y)) - y||_1] `$
 
-$` L(G, F, D_X, D_Y) = L_{\text{GAN}}(G, D_Y, X, Y) + L_{\text{GAN}}(F, D_X, Y, X) + \lambda L_{\text{cycle}}(G, F) `$
+- $` G`$: Generator translating from domain X to domain Y.
+- $` F`$: Generator translating from domain Y to domain X.
 
-Where $` \lambda `$ is a weight parameter for the cycle-consistency loss.
+#### Identity Loss
+The identity loss encourages the generators to preserve the content of the input image when translating it to the same domain. It ensures that the generator does not change images that already belong to the target domain.
 
-### Extending CycleGANs for Counterfactual Explanations
+**Objective:**
+$`  L_{\text{identity}}(G, F) = E_{y \sim p_{\text{data}}(y)}[||G(y) - y||_1] + E_{x \sim p_{\text{data}}(x)}[||F(x) - x||_1] `$
 
-For generating counterfactual explanations for a binary classifier, we need to consider the classifier’s decisions. To do this, we propose adding a counterfactual loss component. Let:
-- $` x `$ be an image from class $` X `$.
-- $` y `$ be an image from class $` Y `$.
-- $` C `$ be a classifier that predicts either $` C(x) = X `$ or $` C(y) = Y `$.
+- $` G`$: Generator translating from domain X to domain Y.
+- $` F`$: Generator translating from domain Y to domain X.
 
-The counterfactual loss is defined as:
+#### Counterfactual Loss
+The counterfactual loss incorporates the predictions of a classifier into the CycleGAN's objective function. It penalizes the generators for producing translated images that are not classified as belonging to the respective counterfactual class by the classifier.
 
-$` L_{\text{counter}}(G, F, C) = \mathbb{E}_{x \sim p_{\text{data}}(x)} [\| C(G(x)) - (0, 1) \|_2^2] + \mathbb{E}_{y \sim p_{\text{data}}(y)} [\| C(F(y)) - (1, 0) \|_2^2] `$
+**Objective:**
+$`  L_{\text{counter}}(G, F, C) = ||C(G(x)) - (0, 1)||_2^2 + ||C(F(y)) - (1, 0)||_2^2 `$
 
-Where $` \| \cdot \|_2^2 `$ is the squared L2 norm.
+- $` G`$: Generator translating from domain X to domain Y.
+- $` F`$: Generator translating from domain Y to domain X.
+- $` C`$: Classifier predicting the probabilities of the input images belonging to each class.
 
-### Identity Loss
+### Complete Generator Loss
+The complete objective function of the CycleGAN with counterfactual loss is composed of the adversarial loss, cycle-consistency loss, identity loss, and counterfactual loss.
 
-An identity loss is added to ensure that images remain unchanged if they already belong to the target domain:
+**Objective:**
+$`  L(G, F, D_X, D_Y, C) = L_{\text{GAN}}(G, D_Y, X, Y) + L_{\text{GAN}}(F, D_X, Y, X) + \lambda L_{\text{cycle}}(G, F) + \mu L_{\text{identity}}(G, F) + \gamma L_{\text{counter}}(G, F, C) `$
 
-$` L_{\text{identity}}(G, F) = \mathbb{E}_{y \sim p_{\text{data}}(y)} [\| G(y) - y \|_1] + \mathbb{E}_{x \sim p_{\text{data}}(x)} [\| F(x) - x \|_1] `$
-
-### Complete Objective Function
-
-The complete objective function for our extended CycleGAN is:
-
-$` L(G, F, D_X, D_Y, C) = L_{\text{GAN}}(G, D_Y, X, Y) + L_{\text{GAN}}(F, D_X, Y, X) + \lambda L_{\text{cycle}}(G, F) + \mu L_{\text{identity}}(G, F) + \gamma L_{\text{counter}}(G, F, C) `$
-
-Where:
-- $` \mu `$ is the weight for the identity loss.
-- $` \gamma `$ is the weight for the counterfactual loss.
-
-During training, discriminators $` D_X `$ and $` D_Y `$ aim to maximize this objective, while generators $` G `$ and $` F `$ try to minimize it.
+- $` \lambda`$: Cycle-consistency loss weight.
+- $` \mu`$: Identity loss weight.
+- $` \gamma`$: Counterfactual loss weight.
+- $` D_X`$, $` D_Y`$: Discriminators for domains X and Y, respectively.
 
 ## How to Run the Repository
 
@@ -143,13 +150,6 @@ The generated counterfactual images were evaluated on several metrics, including
 - **Classification Accuracy**: Ensured that counterfactuals were correctly classified as the intended alternative outcome.
 - **Interpretability**: Rated by medical professionals for clarity and usefulness.
 
-### Sample Images
-
-#### Original Image
-![Original Image](path_to_original_image.png)
-
-#### Counterfactual Image
-![Counterfactual Image](path_to_counterfactual_image.png)
 
 ## Conclusion
 

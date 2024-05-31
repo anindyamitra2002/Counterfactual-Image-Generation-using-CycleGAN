@@ -132,7 +132,7 @@ class Discriminator(pl.LightningModule):
 
 
 class CycleGAN(pl.LightningModule):
-    def __init__(self, train_dir, val_dir, test_dataloader, classifier_path, image_size=512, batch_size=4, channels=1, gf=32, df=64, lambda_cycle=10.0, lambda_id=0.1, classifier_weight=1):
+    def __init__(self, train_dir, val_dir, test_dataloader, classifier_path, checkpoint_dir, image_size=512, batch_size=4, channels=1, gf=32, df=64, lambda_cycle=10.0, lambda_id=0.1, classifier_weight=1):
         super(CycleGAN, self).__init__()
         self.image_size = image_size
         self.batch_size = batch_size
@@ -148,6 +148,7 @@ class CycleGAN(pl.LightningModule):
         self.train_dir = train_dir
         self.val_dir = val_dir
         self.test_dataloader = test_dataloader
+        self.checkpoint_dir = checkpoint_dir
 
         # Initialize the generator, discriminator, and classifier models
         self.g_NP = ResUNetGenerator(gf, channels=self.channels)
@@ -199,7 +200,7 @@ class CycleGAN(pl.LightningModule):
 
         # Classifier loss
         class_loss = nn.MSELoss()(class_N_loss, torch.ones_like(class_N_loss)) + nn.MSELoss()(class_P_loss, torch.zeros_like(class_P_loss))
-
+        
         # Total generator loss
         total_loss = adversarial_loss + self.lambda_cycle * cycle_loss + self.lambda_id * identity_loss + self.classifier_weight * class_loss
               
@@ -214,7 +215,7 @@ class CycleGAN(pl.LightningModule):
         opt.step()
         self.untoggle_optimizer(opt)
         
-        return total_loss, adversarial_loss, cycle_loss
+        return total_loss, adversarial_loss, cycle_loss, counterfactual_loss
 
     def discriminator_training_step(self, img_N, img_P, opt):
         # Pass real images through discriminator D_N
@@ -248,7 +249,7 @@ class CycleGAN(pl.LightningModule):
         img_N, img_P = batch
         optD, optG = self.optimizers()
         
-        total_loss, adversarial_loss, cycle_loss = self.generator_training_step(img_N, img_P, optG)
+        total_loss, adversarial_loss, cycle_loss, counterfactual_loss = self.generator_training_step(img_N, img_P, optG)
         dis_loss, mse_fake_N, mse_fake_P = self.discriminator_training_step(img_N, img_P, optD) 
         
         return {"generator_loss": total_loss, "adversarial_loss": adversarial_loss, "reconstruction_loss": cycle_loss, "discriminator_loss": dis_loss, "mse_fake_N": mse_fake_N, "mse_fake_P": mse_fake_P}
@@ -288,6 +289,7 @@ class CycleGAN(pl.LightningModule):
         # Classifier loss
         class_loss = nn.MSELoss()(class_N_loss, torch.ones_like(class_N_loss)) + nn.MSELoss()(class_P_loss, torch.zeros_like(class_P_loss))
 
+
         # Total generator loss
         total_loss = adversarial_loss + self.lambda_cycle * cycle_loss + self.lambda_id * identity_loss + self.classifier_weight * class_loss
         self.validation_step_outputs.append(total_loss)
@@ -300,7 +302,7 @@ class CycleGAN(pl.LightningModule):
 
         return total_loss
 
-    def on_validation_epoch_end(self):
+    def on_validation_end(self):
         # Calculate average validation loss
         avg_val_loss = torch.stack(self.validation_step_outputs).mean()
 
@@ -310,8 +312,9 @@ class CycleGAN(pl.LightningModule):
             self.lowest_val_loss = avg_val_loss
 
             # Save the generators' state dictionaries
-            torch.save(self.g_NP.state_dict(), f"/teamspace/studios/this_studio/Counterfactual-Image-Generation-using-CycleGAN/models/gan/g_NP_best.ckpt")
-            torch.save(self.g_PN.state_dict(), f"/teamspace/studios/this_studio/Counterfactual-Image-Generation-using-CycleGAN/models/gan/g_PN_best.ckpt")
+            torch.save(self.g_NP.state_dict(), f"{self.checkpoint_dir}/gan/g_NP_best.ckpt")
+            torch.save(self.g_PN.state_dict(), f"{self.checkpoint_dir}/gan/g_PN_best.ckpt")
+            print(f"Model saved! loss reduced to {self.lowest_val_loss}")
 
     def configure_optimizers(self):
         optG = torch.optim.Adam(itertools.chain(self.g_NP.parameters(), self.g_PN.parameters()),lr=2e-4, betas=(0.5, 0.999))

@@ -47,7 +47,7 @@ def train_classifier(image_size,
     checkpoint_callback = ModelCheckpoint(
         monitor='val_loss',
         dirpath=checkpoint_dir,
-        filename='swin_t-epoch{epoch:02d}-val_loss{val_loss:.2f}',
+        filename='efficientnet_b2-epoch{epoch:02d}-val_loss{val_loss:.2f}',
         auto_insert_metric_name=False,
         save_weights_only=False,
         save_top_k=3,
@@ -96,7 +96,7 @@ def train_cyclegan(image_size,
 
     wandb_logger = WandbLogger(project=project, name=job_name, log_model="all")
     print(classifier_path)
-    cyclegan = CycleGAN(train_dir=train_dir, val_dir=val_dir, test_dataloader=test_dataloader, classifier_path=classifier_path, gf=CFG.GAN_FILTERS, df=CFG.DIS_FILTERS)
+    cyclegan = CycleGAN(train_dir=train_dir, val_dir=val_dir, test_dataloader=test_dataloader, classifier_path=classifier_path, checkpoint_dir=checkpoint_dir, gf=CFG.GAN_FILTERS, df=CFG.DIS_FILTERS)
 
     gan_checkpoint_callback = ModelCheckpoint(dirpath=checkpoint_dir,
                                         filename='cyclegan-epoch_{epoch}-vloss_{val_generator_loss:.2f}',
