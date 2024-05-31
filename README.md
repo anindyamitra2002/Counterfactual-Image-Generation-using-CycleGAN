@@ -123,13 +123,13 @@ pip install -r requirements.txt
 1. **Train the Classifier Model:**
 
    ```bash
-   python pipeline.py --model_type "classifier" --image_size 512 --batch_size 4 --epochs 100 --train_dir /path/to/train/data --val_dir /path/to/val/data --checkpoint_dir ./models --project "Your Project Name" --job_name "classifier_training_job"
+   python pipeline.py --model_type "classifier" --image_size 512 --batch_size 4 --epochs 100 --train_dir "/path/to/train/data" --val_dir "/path/to/val/data" --checkpoint_dir "./models" --project "Your Project Name" --job_name "classifier_training_job"
    ```
 
 2. **Train the Generator and Discriminator:**
 
    ```bash
-   python pipeline.py --model_type "cycle-gan" --image_size 512 --batch_size 4 --epochs 50 --train_dir /path/to/train/data --val_dir /path/to/val/data --test_dir /path/to/test/data --checkpoint_dir ./models --project "Your Project Name" --job_name "cyclegan_training_job" --classifier_path /path/to/classifier/checkpoint
+   python pipeline.py --model_type "cycle-gan" --image_size 512 --batch_size 4 --epochs 50 --train_dir "/path/to/train/data" --val_dir "/path/to/val/data" --test_dir "/path/to/test/data" --checkpoint_dir "./models" --project "Your Project Name" --job_name "cyclegan_training_job" --classifier_path "/path/to/classifier/checkpoint" --resume_ckpt_path "/path/to/cyclegan/checkpoint/for/resume/training"
    ```
 
 ### Web Application
