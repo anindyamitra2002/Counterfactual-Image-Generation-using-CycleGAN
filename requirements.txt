@@ -8,3 +8,4 @@ pillow
 matplotlib
 pandas
 numpy
+gradio

@@ -5,7 +5,6 @@ import torchvision.models as models
 from torchmetrics import Accuracy
 
 
-
 class Classifier(pl.LightningModule):
     def __init__(self, transfer=True):
         super(Classifier, self).__init__()

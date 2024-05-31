@@ -8,8 +8,8 @@ from torch.utils.data import DataLoader
 import numpy as np
 import matplotlib.pyplot as plt
 
-from classifier import Classifier
-from dataset import CustomDataset
+from src.classifier import Classifier
+from src.dataset import CustomDataset
 
 
 class AttentionGate(nn.Module):

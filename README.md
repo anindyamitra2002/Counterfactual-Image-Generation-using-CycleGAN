@@ -6,20 +6,10 @@ The primary objective is to generate realistic counterfactual images for image c
 
 The proposed approach holds promise for enhancing the interpretability of deep learning models, especially in high-stakes domains like healthcare, where transparent decision-making is paramount. By providing realistic counterfactual explanations, the project aims to empower clinicians and stakeholders with insights into classifier decisions, thereby fostering trust and facilitating more informed medical interventions.
 
-
-### Python 3.11.0 recommended
-### Create a virtual envireonment
-```
-python -m venv myenv
-```
-### Activate the virtul environment
-```
-.\myenv\Scripts\activate
-```
-Train the CycleGAN
-```
-python pipeline.py --model_type "cycle-gan" --image_size 512 --batch_size 4 --epochs 10 --train_dir "D:\Official\Reseach Projects\Personal Projects\Machine Learning\Deep Learning\Counterfactual-Image-Generation-using-CycleGAN\data\rsna-pneumonia-dataset\train" --val_dir "D:\Official\Reseach Projects\Personal Projects\Machine Learning\Deep Learning\Counterfactual-Image-Generation-using-CycleGAN\data\rsna-pneumonia-dataset\val" --test_dir "D:\Official\Reseach Projects\Personal Projects\Machine Learning\Deep Learning\Counterfactual-Image-Generation-using-CycleGAN\data\rsna-pneumonia-dataset\test" --project "CycleGAN-CounterFactual Explanation" --job_name "Generator-and-Discriminator-training" --checkpoint_dir "D:\Official\Reseach Projects\Personal Projects\Machine Learning\Deep Learning\Counterfactual-Image-Generation-using-CycleGAN\models/gan" --classifier_path "D:\Official\Reseach Projects\Personal Projects\Machine Learning\Deep Learning\Counterfactual-Image-Generation-using-CycleGAN\models\swin_t-epoch15-val_loss0.50.ckpt"
-```
+<div style="display: flex;">
+    <img src="results\test_images_18344_2c789417bc73166635a6.png" width="300"/>
+    <img src="results\test_images_21834_12e001feb6197ea11b87.png" width="300"/>
+</div>
 
 ### Architecture Diagram
 
@@ -114,6 +104,8 @@ During training, discriminators $` D_X `$ and $` D_Y `$ aim to maximize this obj
 0. **Clone the repository and install the required packages:**
 
 ```bash
+python -m venv myenv
+myenv\Scripts\activate
 git clone https://github.com/anindyamitra2002/Counterfactual-Image-Generation-using-CycleGAN.git
 cd Counterfactual-Image-Generation-using-CycleGAN
 pip install -r requirements.txt
@@ -124,13 +116,13 @@ pip install -r requirements.txt
 1. **Train the Classifier Model:**
 
    ```bash
-   python train_model.py --data_path path_to_data
+   python pipeline.py --model_type "classifier" --image_size 512 --batch_size 4 --epochs 100 --train_dir /path/to/train/data --val_dir /path/to/val/data --checkpoint_dir ./models --project "Your Project Name" --job_name "classifier_training_job"
    ```
 
 2. **Train the Generator and Discriminator:**
 
    ```bash
-   python generate_counterfactuals.py --input_image path_to_input_image --output_image path_to_output_image
+   python pipeline.py --model_type "cycle-gan" --image_size 512 --batch_size 4 --epochs 50 --train_dir /path/to/train/data --val_dir /path/to/val/data --test_dir /path/to/test/data --checkpoint_dir ./models --project "Your Project Name" --job_name "cyclegan_training_job" --classifier_path /path/to/classifier/checkpoint
    ```
 
 ### Web Application
@@ -138,10 +130,10 @@ pip install -r requirements.txt
 To run the web application:
 
 ```bash
-python app.py
+gradio main.py
 ```
 
-Access the web app at `http://127.0.0.1:5000`.
+Access the already deployed web app at `http://127.0.0.1:5000`.
 
 ## Evaluation Results
 

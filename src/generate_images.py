@@ -5,7 +5,6 @@ import numpy as np
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 from tqdm import tqdm
-from classifier import Classifier
 from models import ResUNetGenerator
 
 # Custom Dataset
