@@ -215,7 +215,7 @@ class CycleGAN(pl.LightningModule):
         opt.step()
         self.untoggle_optimizer(opt)
         
-        return total_loss, adversarial_loss, cycle_loss, counterfactual_loss
+        return total_loss, adversarial_loss, cycle_loss,
 
     def discriminator_training_step(self, img_N, img_P, opt):
         # Pass real images through discriminator D_N
