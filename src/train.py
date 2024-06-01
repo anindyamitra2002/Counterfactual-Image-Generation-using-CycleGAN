@@ -5,10 +5,10 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 import lightning as pl
 import wandb
 
-from dataset import ClassifierDataset, CustomDataset
-from classifier import Classifier
-from models import CycleGAN
-from config import CFG
+from src.dataset import ClassifierDataset, CustomDataset
+from src.classifier import Classifier
+from src.models import CycleGAN
+from src.config import CFG
 
 def train_classifier(image_size,
                      batch_size,

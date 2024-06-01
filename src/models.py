@@ -215,7 +215,7 @@ class CycleGAN(pl.LightningModule):
         opt.step()
         self.untoggle_optimizer(opt)
         
-        return total_loss, adversarial_loss, cycle_loss,
+        return total_loss, adversarial_loss, cycle_loss
 
     def discriminator_training_step(self, img_N, img_P, opt):
         # Pass real images through discriminator D_N
@@ -249,7 +249,7 @@ class CycleGAN(pl.LightningModule):
         img_N, img_P = batch
         optD, optG = self.optimizers()
         
-        total_loss, adversarial_loss, cycle_loss, counterfactual_loss = self.generator_training_step(img_N, img_P, optG)
+        total_loss, adversarial_loss, cycle_loss = self.generator_training_step(img_N, img_P, optG)
         dis_loss, mse_fake_N, mse_fake_P = self.discriminator_training_step(img_N, img_P, optD) 
         
         return {"generator_loss": total_loss, "adversarial_loss": adversarial_loss, "reconstruction_loss": cycle_loss, "discriminator_loss": dis_loss, "mse_fake_N": mse_fake_N, "mse_fake_P": mse_fake_P}
@@ -312,8 +312,8 @@ class CycleGAN(pl.LightningModule):
             self.lowest_val_loss = avg_val_loss
 
             # Save the generators' state dictionaries
-            torch.save(self.g_NP.state_dict(), f"{self.checkpoint_dir}/gan/g_NP_best.ckpt")
-            torch.save(self.g_PN.state_dict(), f"{self.checkpoint_dir}/gan/g_PN_best.ckpt")
+            torch.save(self.g_NP.state_dict(), f"{self.checkpoint_dir}/g_NP_best.ckpt")
+            torch.save(self.g_PN.state_dict(), f"{self.checkpoint_dir}/g_PN_best.ckpt")
             print(f"Model saved! loss reduced to {self.lowest_val_loss}")
 
     def configure_optimizers(self):

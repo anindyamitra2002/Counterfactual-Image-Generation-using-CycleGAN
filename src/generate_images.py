@@ -5,7 +5,8 @@ import numpy as np
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 from tqdm import tqdm
-from models import ResUNetGenerator
+
+from src.models import ResUNetGenerator
 
 # Custom Dataset
 class ImageDataset(Dataset):

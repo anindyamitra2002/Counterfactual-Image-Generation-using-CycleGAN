@@ -2,6 +2,7 @@ import torch
 from torchvision import transforms
 from PIL import Image
 import numpy as np
+
 from src.classifier import Classifier
 
 # Ensure the necessary directories exist
