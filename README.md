@@ -11,9 +11,10 @@ The proposed approach holds promise for enhancing the interpretability of deep l
     <img src="results\test_images_21834_12e001feb6197ea11b87.png" width="350"/>
 </div>
 
-### Architecture Diagram
-
-![Architecture Diagram](path_to_architecture_diagram.png)
+## Workflow Diagram
+<div style="display: flex;", align="center">
+<img src="images/workflow of CFE.png" width="800"/>
+</div>
 
 ## Methodology
 
