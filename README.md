@@ -6,9 +6,9 @@ The primary objective is to generate realistic counterfactual images for image c
 
 The proposed approach holds promise for enhancing the interpretability of deep learning models, especially in high-stakes domains like healthcare, where transparent decision-making is paramount. By providing realistic counterfactual explanations, the project aims to empower clinicians and stakeholders with insights into classifier decisions, thereby fostering trust and facilitating more informed medical interventions.
 
-<div style="display: flex;">
-    <img src="results\test_images_18344_2c789417bc73166635a6.png" width="300"/>
-    <img src="results\test_images_21834_12e001feb6197ea11b87.png" width="300"/>
+<div style="display: flex;", align="center">
+    <img src="results\test_images_18344_2c789417bc73166635a6.png" width="350"/>
+    <img src="results\test_images_21834_12e001feb6197ea11b87.png" width="350"/>
 </div>
 
 ### Architecture Diagram
@@ -129,7 +129,7 @@ pip install -r requirements.txt
 2. **Train the Generator and Discriminator:**
 
    ```bash
-   python pipeline.py --model_type "cycle-gan" --image_size 512 --batch_size 4 --epochs 50 --train_dir "/path/to/train/data" --val_dir "/path/to/val/data" --test_dir "/path/to/test/data" --checkpoint_dir "./models" --project "Your Project Name" --job_name "cyclegan_training_job" --classifier_path "/path/to/classifier/checkpoint" --resume_ckpt_path "/path/to/cyclegan/checkpoint/for/resume/training"
+   python pipeline.py --model_type "cycle-gan" --image_size 512 --batch_size 32 --epochs 50 --train_dir "/path/to/train/data" --val_dir "/path/to/val/data" --test_dir "/path/to/test/data" --checkpoint_dir "./models" --project "Your Project Name" --job_name "cyclegan_training_job" --classifier_path "/path/to/classifier/checkpoint" --resume_ckpt_path "/path/to/cyclegan/checkpoint/for/resume/training"
    ```
 
 ### Web Application

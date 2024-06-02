@@ -5,6 +5,7 @@ __pycache__/
 cfe/
 data/
 src/__pycache__
+models/*
 src/wandb/
 # C extensions
 *.so

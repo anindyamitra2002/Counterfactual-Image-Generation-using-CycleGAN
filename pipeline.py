@@ -1,6 +1,6 @@
 import argparse
 
-from train import train_classifier, train_cyclegan
+from src.train import train_classifier, train_cyclegan
 
 def main():
     parser = argparse.ArgumentParser(description="Pipeline for training classifier or CycleGAN")
