@@ -47,10 +47,10 @@ class GradCAM:
         cam_image = cam_image / cam_image.max()
         return cam_image
 
-def preprocess_image(image):
+def preprocess_image(image, image_size=512):
     preprocess = transforms.Compose([
         transforms.Grayscale(num_output_channels=1),
-        transforms.Resize((512, 512)),
+        transforms.Resize((image_size, image_size)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5], std=[0.5])
     ])

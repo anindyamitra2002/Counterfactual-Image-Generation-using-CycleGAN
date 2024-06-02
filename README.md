@@ -140,16 +140,25 @@ To run the web application:
 gradio main.py
 ```
 
-Access the already deployed web app at `http://127.0.0.1:5000`.
-
 ## Evaluation Results
 
-The generated counterfactual images were evaluated on several metrics, including:
+Evaluation result of training the efficientNet b1 classifier with 16739 images of RSNA Pneumonia detection Challage Dataset.
+Classifier model is trained on Kaggle T4 x 2 GPU
 
-- **Realism**: Assessed by domain experts.
-- **Classification Accuracy**: Ensured that counterfactuals were correctly classified as the intended alternative outcome.
-- **Interpretability**: Rated by medical professionals for clarity and usefulness.
+| Model Name      | Runtime    | Epoch | Train Accuracy | Train Loss | Val Accuracy | Val Loss  |
+|-----------------|------------|-------|----------------|------------|--------------|-----------|
+| efficientnet_b7 | 2h 54m 50s | 12    | 0.962127       | 0.351027   | 0.847668     | 0.461976  |
+| convnext_tiny   | 2h 22m 31s | 37    | 0.959379       | 0.354263   | 0.850149     | 0.460496  |
+| swin_t          | 1h 17m 30s | 13    | 0.908124       | 0.402915   | 0.844195     | 0.464023  |
+| efficientnet_b1 | 1h 14m     | 23    | 0.968459       | 0.343911   | 0.850149     | 0.460599  |
+| efficientnet_b7 | 2h 21m     | 17    | 0.827360       | 0.479220   | 0.804830     | 0.499347  |
+| resnext101_64x4d| 1h 48m 31s | 13    | 0.799403       | 0.503710   | 0.780681     | 0.521838  |
 
+Evaluation Result of generator and discriminator training:
+
+ Model Name      | Epochs | Val Generator Loss | Val Reconstruction Loss | Val Class Loss | Val Adversarial Loss | Val Identity Loss | Runtime              | GPU       | Platform        |
+-----------------|--------|--------------------|-------------------------|----------------|----------------------|-------------------|----------------------|-----------|-----------------|
+ Attention Unet  | 50     | 1.638              | 0.01521                 | 0.5008         | 0.9515               | 0.03367           | 4 hr 15 min 52 sec   | L4 x 1    | lightning studio|
 
 ## Conclusion
 
@@ -157,7 +166,7 @@ Our project demonstrates that adversarial image-to-image translation is an effec
 
 ## Testing Web App Link
 
-You can access the testing web application [here](http://your-web-app-link.com).
+You can access the testing web application [here](https://huggingface.co/spaces/anindya-hf-2002/cfe-gen).
 
 ---
 
@@ -170,13 +179,7 @@ Feel free to reach out for any questions or contributions!
 ---
 
 **Contact Information:**
-- Email: your_email@example.com
-- GitHub: [your_username](https://github.com/your_username)
+- Email: anindyamitra2018@gmail.com
 
----
 
-*This project is licensed under the MIT License - see the LICENSE file for details.*
-
----
-
-*README.md created with ❤️ by [your_name].*
+*README.md created with ❤️ by [Anindya Mitra].*

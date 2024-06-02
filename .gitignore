@@ -9,7 +9,6 @@ models/*
 src/wandb/
 # C extensions
 *.so
-
 # Distribution / packaging
 .Python
 build/
