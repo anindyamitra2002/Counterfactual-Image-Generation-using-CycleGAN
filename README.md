@@ -178,9 +178,9 @@ Classifier model is trained on Kaggle T4 x 2 GPU
 
 Evaluation Result of generator and discriminator training which performed in lightning studio on L4 GPU:
 
-| Model Name      | Epochs | Val Generator Loss | Val Reconstruction Loss | Val Class Loss | Val Adversarial Loss | Val Identity Loss | Runtime            | 
-|-----------------|--------|--------------------|-------------------------|----------------|----------------------|-------------------|--------------------|
-| Attention Unet  | 50     | 1.638              | 0.01521                 | 0.5008         | 0.9515               | 0.03367           | 4 hr 15 min 52 sec |
+| Model Name      | Epochs | Val Generator Loss | Val Reconstruction Loss | Val Class Loss | Val Adversarial Loss | Val Identity Loss | Runtime              | 
+|-----------------|--------|--------------------|-------------------------|----------------|----------------------|-------------------|----------------------|
+| Attention Unet  | 50     | 1.638              | 0.01521                 | 0.5008         | 0.9515               | 0.03367           | 4 hr 15 min 52 sec   |
 
 ## Conclusion
 
