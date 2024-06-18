@@ -124,13 +124,34 @@ pip install -r requirements.txt
 1. **Train the Classifier Model:**
 
    ```bash
-   python pipeline.py --model_type "classifier" --image_size 512 --batch_size 4 --epochs 100 --train_dir "/path/to/train/data" --val_dir "/path/to/val/data" --checkpoint_dir "./models" --project "Your Project Name" --job_name "classifier_training_job"
+   python pipeline.py\
+    --model_type "classifier"\
+    --image_size 512\
+    --batch_size 4\
+    --epochs 100\
+    --train_dir "/path/to/train/data"\
+    --val_dir "/path/to/val/data"\
+    --checkpoint_dir "./models"\
+    --project "Your Project Name"\
+    --job_name "classifier_training_job"
    ```
 
 2. **Train the Generator and Discriminator:**
 
    ```bash
-   python pipeline.py --model_type "cycle-gan" --image_size 512 --batch_size 32 --epochs 50 --train_dir "/path/to/train/data" --val_dir "/path/to/val/data" --test_dir "/path/to/test/data" --checkpoint_dir "./models" --project "Your Project Name" --job_name "cyclegan_training_job" --classifier_path "/path/to/classifier/checkpoint" --resume_ckpt_path "/path/to/cyclegan/checkpoint/for/resume/training"
+   python pipeline.py\
+    --model_type "cycle-gan"\
+    --image_size 512\
+    --batch_size 32\
+    --epochs 50\
+    --train_dir "/path/to/train/data"\
+    --val_dir "/path/to/val/data"\
+    --test_dir "/path/to/test/data"\
+    --checkpoint_dir "./models"\
+    --project "Your Project Name"\
+    --job_name "cyclegan_training_job"\
+    --classifier_path "/path/to/classifier/checkpoint"\
+    --resume_ckpt_path "/path/to/cyclegan/checkpoint/for/resume/training"
    ```
 
 ### Web Application
@@ -155,11 +176,11 @@ Classifier model is trained on Kaggle T4 x 2 GPU
 | efficientnet_b7 | 2h 21m     | 17    | 0.827360       | 0.479220   | 0.804830     | 0.499347  |
 | resnext101_64x4d| 1h 48m 31s | 13    | 0.799403       | 0.503710   | 0.780681     | 0.521838  |
 
-Evaluation Result of generator and discriminator training:
+Evaluation Result of generator and discriminator training which performed in lightning studio on L4 GPU:
 
- Model Name      | Epochs | Val Generator Loss | Val Reconstruction Loss | Val Class Loss | Val Adversarial Loss | Val Identity Loss | Runtime              | GPU       | Platform        |
------------------|--------|--------------------|-------------------------|----------------|----------------------|-------------------|----------------------|-----------|-----------------|
- Attention Unet  | 50     | 1.638              | 0.01521                 | 0.5008         | 0.9515               | 0.03367           | 4 hr 15 min 52 sec   | L4 x 1    | lightning studio|
+| Model Name      | Epochs | Val Generator Loss | Val Reconstruction Loss | Val Class Loss | Val Adversarial Loss | Val Identity Loss | Runtime            | 
+|-----------------|--------|--------------------|-------------------------|----------------|----------------------|-------------------|--------------------|
+| Attention Unet  | 50     | 1.638              | 0.01521                 | 0.5008         | 0.9515               | 0.03367           | 4 hr 15 min 52 sec |
 
 ## Conclusion
 
